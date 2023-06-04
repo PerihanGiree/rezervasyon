@@ -6,13 +6,13 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
 import React, { useLayoutEffect, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons, Feather, FontAwesome5 } from "@expo/vector-icons";
 import Header from "../components/Header";
 import DatePicker from "react-native-date-ranges";
-import { useSafeAreaFrame } from "react-native-safe-area-context";
 import {
   BottomModal,
   ModalButton,
@@ -22,6 +22,7 @@ import {
   ModalContent,
 } from "react-native-modals";
 const HomeScreen = () => {
+  const route = useRoute();
   const navigation = useNavigation();
   const [selectedDates, setSelectedDates] = useState();
   const [rooms, setRooms] = useState(1);
@@ -69,6 +70,37 @@ const HomeScreen = () => {
       />
     );
   };
+  //search inputtan gelen
+  console.log(route.params);
+  const searchPlaces = (place) => {
+    if (!route.params || !selectedDates) {
+      Alert.alert(
+        "Geçersiz Paremetre",
+        "Girdiğiniz Bilgileri Kontrol Ediniz",
+        [
+          {
+            text: "İptal Et",
+            onPress: () => console.log("İptal Et"),
+            style: "cancel",
+          },
+          {
+            text: "Tamam",
+            onPress: () => console.log("Tamam"),
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+    if (route.params && selectedDates) {
+      navigation.navigate("Places", {
+        rooms: rooms,
+        adults: adults,
+        children: children,
+        selectedDates: selectedDates,
+        place: place,
+      });
+    }
+  };
 
   return (
     <>
@@ -86,6 +118,7 @@ const HomeScreen = () => {
           >
             {/**Açıklama  */}
             <TouchableOpacity
+              onPress={() => navigation.navigate("Search")}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -97,7 +130,14 @@ const HomeScreen = () => {
               }}
             >
               <Feather name="search" size={24} color="black" />
-              <TextInput placeholder="Aradığınız adresi girin" />
+              <TextInput
+                placeholderTextColor="black"
+                placeholder={
+                  route?.params
+                    ? route.params.input
+                    : "Aramak istediğiniz yeri giriniz"
+                }
+              />
             </TouchableOpacity>
 
             {/**Select Date */}
@@ -170,6 +210,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
           <TouchableOpacity
+            onPress={() => searchPlaces(route?.params.input)}
             style={{
               marginTop: 20,
               marginHorizontal: 20,

@@ -1,12 +1,25 @@
-import { StyleSheet, View, Text, SafeAreaView, TextInput } from "react-native";
-import React, { useState } from "react";
-import { Feather, Ionicons } from "@expo/vector-icons";
-import SearchResults from "../components/SearchResults";
-import { useNavigation } from "@react-navigation/native";
-const SearchScreen = () => {
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { BottomModal } from "react-native-modals";
+import { ModalFooter } from "react-native-modals";
+import { ModalContent } from "react-native-modals";
+import { SlideAnimation } from "react-native-modals";
+import { ModalTitle } from "react-native-modals";
+
+import React, { useLayoutEffect, useState } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { Ionicons, Octicons, Entypo, FontAwesome } from "@expo/vector-icons";
+import PropertyCard from "../components/PropertyCard";
+const PlacesScreen = () => {
   const navigation = useNavigation();
-  const [input, setInput] = useState("");
-  console.log(input);
+  const [modalVisibile, setModalVisibile] = useState(false);
+  const [selectedFilter, setSelectedFiter] = useState();
+  const route = useRoute();
   const data = [
     {
       id: "0",
@@ -468,36 +481,159 @@ const SearchScreen = () => {
       ],
     },
   ];
+  console.log(route.params);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      title: "Gezilecek Yerler",
+      headerTitleStyle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        color: "white",
+        marginLeft: 200,
+      },
+      headerStyle: {
+        backgroundColor: "#0047AB",
+        height: 110,
+        borderBottomColor: "transparent",
+        shadowColor: "transparent",
+      },
+    });
+  }, []);
+  const filters = [
+    { id: "0", filter: "maliyet:Düşükten Yükseğe" },
+    { id: "1", filter: "maliyet:Yüksekten Düşüğe" },
+  ];
+
   return (
-    <SafeAreaView>
-      <View
+    <View>
+      <TouchableOpacity
         style={{
-          padding: 10,
-          margin: 10,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          borderColor: "#CCCCFF",
-          borderWidth: 4,
-          borderRadius: 10,
-          marginTop: 50,
+          paddingHorizontal: 20,
+          padding: 12,
+          backgroundColor: "white",
         }}
       >
-        <TextInput
-          value={input}
-          onChangeText={(text) => setInput(text)}
-          placeholder="Aramak istediğiniz şehri girin"
-        />
-        <Feather name="search" size={22} color="black" />
-      </View>
+        <TouchableOpacity
+          onPress={() => setModalVisibile(!modalVisibile)}
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
+          <Octicons name="arrow-switch" size={24} color="gray" />
+          <Text style={{ fontSize: 15, fontWeight: "500", marginLeft: 8 }}>
+            Sırala
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
+          <Ionicons name="filter" size={24} color="gray" />
+          <Text style={{ fontSize: 15, fontWeight: "500", marginLeft: 8 }}>
+            Filtrele
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
+          <Entypo name="location-pin" size={24} color="gray" />
+          <Text style={{ fontSize: 15, fontWeight: "500", marginLeft: 8 }}>
+            Harita
+          </Text>
+        </TouchableOpacity>
+      </TouchableOpacity>
+      <ScrollView style={{ backgroundColor: "#F5F5F5" }}>
+        {data
+          ?.filter((item) => item.place === route.params.place)
+          .map((item) =>
+            item.properties.map((property, index) => (
+              <PropertyCard
+                rooms={route.params.rooms}
+                children={route.params.children}
+                adults={route.params.adults}
+                selectedDates={route.params.selectedDates}
+                property={property}
+                availableRooms={property.rooms}
+              />
+            ))
+          )}
+      </ScrollView>
+      <BottomModal
+        onBackdropPress={() => setModalVisibile(!modalVisibile)}
+        swipeDirection={["up", "down"]}
+        swipeTreshold={200}
+        footer={
+          <ModalFooter>
+            <TouchableOpacity
+              style={{
+                paddingRight: 10,
+                marginLeft: "auto",
+                marginRight: "auto",
+                marginVertical: 10,
+              }}
+            >
+              <Text>Uygula</Text>
+            </TouchableOpacity>
+          </ModalFooter>
+        }
+        modalTitle={<ModalTitle title="Sırala ve Filtrele" />}
+        modalAnimation={
+          new SlideAnimation({
+            slideFrom: "bottom",
+          })
+        }
+        onHardwareBackPress={() => setModalVisibile(!modalVisibile)}
+        visible={modalVisibile}
+        onTouchOutside={() => setModalVisibile(!modalVisibile)}
+      >
+        <ModalContent style={{ width: "100%", height: 280 }}>
+          <View style={{ flexDirection: "row" }}>
+            <View
+              style={{
+                marginVertical: 10,
+                flex: 2,
+                height: 280,
+                borderRightWidth: 1,
+                borderColor: "#E0E0E0",
+              }}
+            >
+              <Text>Sırala</Text>
+            </View>
+            <View style={{ flex: 3, margin: 10 }}>
+              {filters.map((item, index) => {
+                return (
+                  <TouchableOpacity
+                    onPress={() => setSelectedFiter(item.filter)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginVertical: 10,
+                    }}
+                    key={index}
+                  >
+                    {selectedFilter.includes(item.filter) ? (
+                      <FontAwesome name="circle" size={18} color="green" />
+                    ) : (
+                      <Entypo name="circle" size={18} color="black" />
+                    )}
 
-      <View>
-        <SearchResults data={data} input={input} setInput={setInput} />
-      </View>
-    </SafeAreaView>
+                    <Text
+                      style={{ fontSize: 16, fontWeight: "500", marginLeft: 6 }}
+                    >
+                      {item.filter}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </ModalContent>
+      </BottomModal>
+    </View>
   );
 };
 
-export default SearchScreen;
+export default PlacesScreen;
 
 const styles = StyleSheet.create({});
