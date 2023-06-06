@@ -13,12 +13,18 @@ import { ModalTitle } from "react-native-modals";
 
 import React, { useLayoutEffect, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Ionicons, Octicons, Entypo, FontAwesome } from "@expo/vector-icons";
+import {
+  Ionicons,
+  Octicons,
+  Entypo,
+  FontAwesome,
+  FontAwesome5,
+} from "@expo/vector-icons";
 import PropertyCard from "../components/PropertyCard";
 const PlacesScreen = () => {
   const navigation = useNavigation();
   const [modalVisibile, setModalVisibile] = useState(false);
-  const [selectedFilter, setSelectedFiter] = useState();
+  const [selectedFilter, setSelectedFilter] = useState([]);
   const route = useRoute();
   const data = [
     {
@@ -501,10 +507,53 @@ const PlacesScreen = () => {
     });
   }, []);
   const filters = [
-    { id: "0", filter: "maliyet:Düşükten Yükseğe" },
-    { id: "1", filter: "maliyet:Yüksekten Düşüğe" },
+    {
+      id: "0",
+      filter: ":Düşükten Yükseğe",
+    },
+    {
+      id: "1",
+      filter: ":Yüksekten Düşüğe",
+    },
   ];
 
+  const [sortedData, setSortedData] = useState(data);
+  const searchPlaces = data?.filter(
+    (item) => item.place === route.params.place
+  );
+  console.log(searchPlaces);
+
+  const compare = (a, b) => {
+    if (a.newPrice > b.newPrice) {
+      return -1;
+    }
+    if (a.newPrice < b.newPrice) {
+      return 1;
+    }
+    return 0;
+  };
+  const comparision = (a, b) => {
+    if (a.newPrice < b.newPrice) {
+      return -1;
+    }
+    if (a.newPrice > b.newPrice) {
+      return 1;
+    }
+    return 0;
+  };
+  const applyFilter = (filter) => {
+    setModalVisibile(false);
+    switch (filter) {
+      case ":Düşükten Yükseğe":
+        searchPlaces.map((val) => val.properties.sort(comparision));
+        setSortedData(searchPlaces);
+        break;
+      case ":Yüksekten Düşüğe":
+        searchPlaces.map((val) => val.properties.sort(compare));
+        setSortedData(searchPlaces);
+        break;
+    }
+  };
   return (
     <View>
       <TouchableOpacity
@@ -535,6 +584,11 @@ const PlacesScreen = () => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("Map", {
+              searchResults: searchPlaces,
+            })
+          }
           style={{ flexDirection: "row", alignItems: "center" }}
         >
           <Entypo name="location-pin" size={24} color="gray" />
@@ -544,7 +598,7 @@ const PlacesScreen = () => {
         </TouchableOpacity>
       </TouchableOpacity>
       <ScrollView style={{ backgroundColor: "#F5F5F5" }}>
-        {data
+        {sortedData
           ?.filter((item) => item.place === route.params.place)
           .map((item) =>
             item.properties.map((property, index) => (
@@ -566,14 +620,22 @@ const PlacesScreen = () => {
         footer={
           <ModalFooter>
             <TouchableOpacity
+              onPress={() => applyFilter(selectedFilter)}
               style={{
                 paddingRight: 10,
                 marginLeft: "auto",
                 marginRight: "auto",
                 marginVertical: 10,
+                marginBottom: 50,
+                width: 380,
+                height: 40,
+                backgroundColor: "#0047AB",
+                borderRadius: 5,
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              <Text>Uygula</Text>
+              <Text style={{ fontWeight: "bold", color: "white" }}>Uygula</Text>
             </TouchableOpacity>
           </ModalFooter>
         }
@@ -601,31 +663,35 @@ const PlacesScreen = () => {
               <Text>Sırala</Text>
             </View>
             <View style={{ flex: 3, margin: 10 }}>
-              {filters.map((item, index) => {
-                return (
-                  <TouchableOpacity
-                    onPress={() => setSelectedFiter(item.filter)}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginVertical: 10,
-                    }}
-                    key={index}
-                  >
-                    {selectedFilter.includes(item.filter) ? (
-                      <FontAwesome name="circle" size={18} color="green" />
-                    ) : (
-                      <Entypo name="circle" size={18} color="black" />
-                    )}
-
+              {filters.map((item, index) => (
+                <TouchableOpacity
+                  onPress={() => setSelectedFilter(item.filter)}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginVertical: 10,
+                  }}
+                  key={index}
+                >
+                  {selectedFilter.includes(item.filter) ? (
+                    <FontAwesome name="circle" size={18} color="blue" />
+                  ) : (
+                    <Entypo name="circle" size={18} color="black" />
+                  )}
+                  <View style={{ flexDirection: "row", margin: 2 }}>
+                    <FontAwesome5
+                      name="money-bill-wave-alt"
+                      size={18}
+                      color="green"
+                    />
                     <Text
                       style={{ fontSize: 16, fontWeight: "500", marginLeft: 6 }}
                     >
                       {item.filter}
                     </Text>
-                  </TouchableOpacity>
-                );
-              })}
+                  </View>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </ModalContent>
