@@ -9,9 +9,7 @@ import {
 } from "react-native";
 import React, { useLayoutEffect } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { pixelNormalize } from "../components/Normalise";
 import { MaterialIcons } from "@expo/vector-icons";
-import Amenities from "../components/Amenities";
 
 const PropertyInfoScreen = () => {
   const route = useRoute();
@@ -213,7 +211,6 @@ const PropertyInfoScreen = () => {
               marginTop: 15,
             }}
           />
-          <Amenities />
 
           <Text
             style={{
@@ -225,41 +222,6 @@ const PropertyInfoScreen = () => {
           />
         </ScrollView>
       </SafeAreaView>
-
-      {/**<TouchableOpacity
-        onPress={() =>
-          navigation.navigate("Rooms", {
-            rooms: route.params.availableRooms,
-            oldPrice: route.params.oldPrice,
-            newPrice: route.params.newPrice,
-            name: route.params.name,
-            children: route.params.children,
-            adults: route.params.adults,
-            rating: route.params.rating,
-            startDate: route.params.selectedDates.startDate,
-            endDate: route.params.selectedDates.endDate,
-          })
-        }
-        style={{
-          backgroundColor: "#6CB4EE",
-          position: "absolute",
-          bottom: 20,
-          padding: 15,
-          width: "95%",
-          marginHorizontal: 10,
-        }}
-      >
-        <Text
-          style={{
-            textAlign: "center",
-            color: "white",
-            fontWeight: "bold",
-            fontSize: 17,
-          }}
-        >
-          Select Availabilty
-        </Text>
-      </TouchableOpacity> */}
     </>
   );
 };
